@@ -1,10 +1,14 @@
-![GitHub License](https://img.shields.io/github/license/nikkinikki-org/OpenWrt-nikki?style=for-the-badge&logo=github) ![GitHub Tag](https://img.shields.io/github/v/release/nikkinikki-org/OpenWrt-nikki?style=for-the-badge&logo=github) ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/nikkinikki-org/OpenWrt-nikki/total?style=for-the-badge&logo=github) ![GitHub Repo stars](https://img.shields.io/github/stars/nikkinikki-org/OpenWrt-nikki?style=for-the-badge&logo=github) [![Telegram](https://img.shields.io/badge/Telegram-gray?style=for-the-badge&logo=telegram)](https://t.me/nikkinikki_org)
+![GitHub License](https://img.shields.io/github/license/ham0223/OpenWrt-nikki?style=for-the-badge&logo=github) ![GitHub Tag](https://img.shields.io/github/v/release/ham0223/OpenWrt-nikki?style=for-the-badge&logo=github) ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/ham0223/OpenWrt-nikki/total?style=for-the-badge&logo=github) ![GitHub Repo stars](https://img.shields.io/github/stars/ham0223/OpenWrt-nikki?style=for-the-badge&logo=github) [![Telegram](https://img.shields.io/badge/Telegram-gray?style=for-the-badge&logo=telegram)](https://t.me/nikkinikki_org)
 
 中文 | [English](README.md)
 
 # Nikki
 
 在 OpenWrt 上使用 Mihomo 进行透明代理。
+
+> [nikkinikki-org/OpenWrt-nikki](https://github.com/nikkinikki-org/OpenWrt-nikki) 的个人 fork。
+> mihomo 内核锁定在 **v1.19.32**，并新增了两个手动一键 workflow：
+> `update-mihomo`（升级内核）和 `sync-upstream`（合并上游）。
 
 ## 环境要求
 
@@ -28,7 +32,7 @@
 
 ```shell
 # 只需运行一次
-wget -O - https://github.com/nikkinikki-org/OpenWrt-nikki/raw/refs/heads/main/feed.sh | ash
+wget -O - https://github.com/ham0223/OpenWrt-nikki/raw/refs/heads/main/feed.sh | ash
 ```
 
 2. 安装
@@ -48,13 +52,13 @@ apk add luci-i18n-nikki-zh-cn
 ### B. 从发行版安装
 
 ```shell
-wget -O - https://github.com/nikkinikki-org/OpenWrt-nikki/raw/refs/heads/main/install.sh | ash
+wget -O - https://github.com/ham0223/OpenWrt-nikki/raw/refs/heads/main/install.sh | ash
 ```
 
 ## 卸载并重置
 
 ```shell
-wget -O - https://github.com/nikkinikki-org/OpenWrt-nikki/raw/refs/heads/main/uninstall.sh | ash
+wget -O - https://github.com/ham0223/OpenWrt-nikki/raw/refs/heads/main/uninstall.sh | ash
 ```
 
 ## 如何使用
@@ -75,7 +79,7 @@ wget -O - https://github.com/nikkinikki-org/OpenWrt-nikki/raw/refs/heads/main/un
 
 ```shell
 # 添加源
-echo "src-git nikki https://github.com/nikkinikki-org/OpenWrt-nikki.git;main" >> "feeds.conf.default"
+echo "src-git nikki https://github.com/ham0223/OpenWrt-nikki.git;main" >> "feeds.conf.default"
 # 更新并安装源
 ./scripts/feeds update -a
 ./scripts/feeds install -a
@@ -100,7 +104,7 @@ make package/luci-app-nikki/compile
 
 ## 贡献者
 
-[![贡献者](https://contrib.rocks/image?repo=nikkinikki-org/OpenWrt-nikki)](https://github.com/nikkinikki-org/OpenWrt-nikki/graphs/contributors)
+[![贡献者](https://contrib.rocks/image?repo=ham0223/OpenWrt-nikki)](https://github.com/ham0223/OpenWrt-nikki/graphs/contributors)
 
 ## 特别感谢
 

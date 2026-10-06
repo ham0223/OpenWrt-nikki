@@ -1,10 +1,14 @@
-![GitHub License](https://img.shields.io/github/license/nikkinikki-org/OpenWrt-nikki?style=for-the-badge&logo=github) ![GitHub Tag](https://img.shields.io/github/v/release/nikkinikki-org/OpenWrt-nikki?style=for-the-badge&logo=github) ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/nikkinikki-org/OpenWrt-nikki/total?style=for-the-badge&logo=github) ![GitHub Repo stars](https://img.shields.io/github/stars/nikkinikki-org/OpenWrt-nikki?style=for-the-badge&logo=github) [![Telegram](https://img.shields.io/badge/Telegram-gray?style=for-the-badge&logo=telegram)](https://t.me/nikkinikki_org)
+![GitHub License](https://img.shields.io/github/license/ham0223/OpenWrt-nikki?style=for-the-badge&logo=github) ![GitHub Tag](https://img.shields.io/github/v/release/ham0223/OpenWrt-nikki?style=for-the-badge&logo=github) ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/ham0223/OpenWrt-nikki/total?style=for-the-badge&logo=github) ![GitHub Repo stars](https://img.shields.io/github/stars/ham0223/OpenWrt-nikki?style=for-the-badge&logo=github) [![Telegram](https://img.shields.io/badge/Telegram-gray?style=for-the-badge&logo=telegram)](https://t.me/nikkinikki_org)
 
 English | [中文](README.zh.md)
 
 # Nikki
 
 Transparent Proxy with Mihomo on OpenWrt.
+
+> Personal fork of [nikkinikki-org/OpenWrt-nikki](https://github.com/nikkinikki-org/OpenWrt-nikki).
+> The mihomo core is pinned to **v1.19.32**, and two manual one-click workflows are added:
+> `update-mihomo` (bump the core) and `sync-upstream` (merge upstream).
 
 ## Prerequisites
 
@@ -28,7 +32,7 @@ Transparent Proxy with Mihomo on OpenWrt.
 
 ```shell
 # only needs to be run once
-wget -O - https://github.com/nikkinikki-org/OpenWrt-nikki/raw/refs/heads/main/feed.sh | ash
+wget -O - https://github.com/ham0223/OpenWrt-nikki/raw/refs/heads/main/feed.sh | ash
 ```
 
 2. Install
@@ -48,13 +52,13 @@ apk add luci-i18n-nikki-zh-cn
 ### B. Install From Release
 
 ```shell
-wget -O - https://github.com/nikkinikki-org/OpenWrt-nikki/raw/refs/heads/main/install.sh | ash
+wget -O - https://github.com/ham0223/OpenWrt-nikki/raw/refs/heads/main/install.sh | ash
 ```
 
 ## Uninstall & Reset
 
 ```shell
-wget -O - https://github.com/nikkinikki-org/OpenWrt-nikki/raw/refs/heads/main/uninstall.sh | ash
+wget -O - https://github.com/ham0223/OpenWrt-nikki/raw/refs/heads/main/uninstall.sh | ash
 ```
 
 ## How To Use
@@ -75,7 +79,7 @@ Note that the steps above may change base on config.
 
 ```shell
 # add feed
-echo "src-git nikki https://github.com/nikkinikki-org/OpenWrt-nikki.git;main" >> "feeds.conf.default"
+echo "src-git nikki https://github.com/ham0223/OpenWrt-nikki.git;main" >> "feeds.conf.default"
 # update & install feeds
 ./scripts/feeds update -a
 ./scripts/feeds install -a
@@ -100,7 +104,7 @@ The package files will be found under `bin/packages/your_architecture/nikki`.
 
 ## Contributors
 
-[![Contributors](https://contrib.rocks/image?repo=nikkinikki-org/OpenWrt-nikki)](https://github.com/nikkinikki-org/OpenWrt-nikki/graphs/contributors)
+[![Contributors](https://contrib.rocks/image?repo=ham0223/OpenWrt-nikki)](https://github.com/ham0223/OpenWrt-nikki/graphs/contributors)
 
 ## Special Thanks
 
