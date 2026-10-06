@@ -1,0 +1,122 @@
+name: update-mihomo
+
+# 手动一键更新 mihomo-meta 内核。
+# Actions -> update-mihomo -> Run workflow 即可。
+# 与官方 dependabot 的区别：只动 mihomo-meta/Makefile，不碰 mihomo-alpha；
+# 且 hash 由本 workflow 用与 OpenWrt 完全相同的 tar 命令算出，保证构建不会 hash mismatch。
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'mihomo tag，例如 v1.19.33（留空 = 自动取最新正式版）'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v6
+
+      - name: resolve target tag
+        id: tag
+        run: |
+          set -e
+          tag="${{ github.event.inputs.version }}"
+          if [ -z "$tag" ]; then
+            tag=$(git ls-remote --tags --refs https://github.com/MetaCubeX/mihomo.git \
+                  | awk -F'refs/tags/' '{print $2}' \
+                  | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' \
+                  | sort -V | tail -n 1)
+          fi
+          [ -n "$tag" ] || { echo "::error::无法解析 mihomo tag"; exit 1; }
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "version=${tag#v}" >> "$GITHUB_OUTPUT"
+          echo "目标 tag: $tag"
+
+      - name: read current version
+        id: current
+        run: |
+          cur=$(grep -m1 '^PKG_SOURCE_VERSION:=' mihomo-meta/Makefile | cut -d '=' -f 2)
+          echo "tag=$cur" >> "$GITHUB_OUTPUT"
+          echo "当前 tag: $cur"
+
+      - name: compute mirror hash
+        if: steps.current.outputs.tag != steps.tag.outputs.tag
+        id: hash
+        run: |
+          set -e
+          umask 0022
+          git clone --quiet https://github.com/MetaCubeX/mihomo.git mihomo-src
+          git -C mihomo-src checkout --quiet "${{ steps.tag.outputs.tag }}"
+          git -C mihomo-src config core.abbrev 8
+
+          ts=$(git -C mihomo-src log -1 --format=%ct)
+          dir="mihomo-meta-${{ steps.tag.outputs.version }}"
+          mkdir -p "$dir"
+          git -C mihomo-src archive --format=tar HEAD | tar -x -f - -C "$dir"
+          tar --numeric-owner --owner=0 --group=0 --mode=a-s --sort=name \
+              --mtime="@${ts}" -c "$dir" | gzip -n -c > "$dir.tar.gz"
+
+          h=$(sha256sum "$dir.tar.gz" | cut -d ' ' -f 1)
+          c=$(git -C mihomo-src rev-parse HEAD)
+          n=$(find "$dir" -type f | wc -l)
+          s=$(stat -c%s "$dir.tar.gz")
+
+          echo "hash=$h"   >> "$GITHUB_OUTPUT"
+          echo "commit=$c" >> "$GITHUB_OUTPUT"
+          echo "files=$n"  >> "$GITHUB_OUTPUT"
+          echo "size=$s"   >> "$GITHUB_OUTPUT"
+
+          echo "mihomo commit : $c"
+          echo "源码文件数    : $n"
+          echo "tarball 大小  : $s bytes"
+          echo "mirror hash   : $h"
+
+          rm -rf mihomo-src "$dir" "$dir.tar.gz"
+
+      - name: apply
+        if: steps.current.outputs.tag != steps.tag.outputs.tag
+        run: |
+          set -e
+          f=mihomo-meta/Makefile
+          sed -i "s|^PKG_VERSION:=.*|PKG_VERSION:=${{ steps.tag.outputs.version }}|"           "$f"
+          sed -i "s|^PKG_SOURCE_VERSION:=.*|PKG_SOURCE_VERSION:=${{ steps.tag.outputs.tag }}|" "$f"
+          sed -i "s|^PKG_MIRROR_HASH:=.*|PKG_MIRROR_HASH:=${{ steps.hash.outputs.hash }}|"     "$f"
+          sed -i "s|^PKG_BUILD_VERSION:=.*|PKG_BUILD_VERSION:=${{ steps.tag.outputs.tag }}|"   "$f"
+          git --no-pager diff
+
+      - name: commit and push
+        if: steps.current.outputs.tag != steps.tag.outputs.tag
+        run: |
+          set -e
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add mihomo-meta/Makefile
+          git commit -m "chore: update mihomo-meta to ${{ steps.tag.outputs.tag }}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+          echo "已推送到 ${GITHUB_REF_NAME}"
+
+      - name: summary
+        run: |
+          {
+            echo "### mihomo 内核更新"
+            echo ""
+            if [ "${{ steps.current.outputs.tag }}" = "${{ steps.tag.outputs.tag }}" ]; then
+              echo "已经是 \`${{ steps.tag.outputs.tag }}\`，无需更新。"
+            else
+              echo "| 项目 | 值 |"
+              echo "|---|---|"
+              echo "| 原版本 | \`${{ steps.current.outputs.tag }}\` |"
+              echo "| 新版本 | \`${{ steps.tag.outputs.tag }}\` |"
+              echo "| mihomo commit | \`${{ steps.hash.outputs.commit }}\` |"
+              echo "| 源码文件数 | ${{ steps.hash.outputs.files }} |"
+              echo "| tarball 大小 | ${{ steps.hash.outputs.size }} bytes |"
+              echo "| PKG_MIRROR_HASH | \`${{ steps.hash.outputs.hash }}\` |"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

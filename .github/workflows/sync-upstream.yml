@@ -1,0 +1,69 @@
+name: sync-upstream
+
+# 手动一键把官方 nikkinikki-org/OpenWrt-nikki 的 main 合并进你的 fork。
+# Actions -> sync-upstream -> Run workflow 即可。
+# 用的是 git merge（不是覆盖），所以你在 fork 上的改动会被保留。
+# 若官方改动与你的改动撞在同一行，merge 会失败并列出冲突文件，需要本地手动解决。
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: merge upstream
+        run: |
+          set -e
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git remote add upstream https://github.com/nikkinikki-org/OpenWrt-nikki.git 2>/dev/null \
+            || git remote set-url upstream https://github.com/nikkinikki-org/OpenWrt-nikki.git
+          git fetch --no-tags upstream main
+
+          behind=$(git rev-list --count HEAD..upstream/main)
+          echo "落后官方 main：$behind 个提交"
+
+          {
+            echo "### 同步官方 main"
+            echo ""
+            echo "落后官方 \`$behind\` 个提交。"
+            echo ""
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$behind" = "0" ]; then
+            echo "已经是最新，无需同步"
+            exit 0
+          fi
+
+          {
+            echo "即将合入："
+            echo '```'
+            git --no-pager log --oneline HEAD..upstream/main
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if git merge --no-edit upstream/main; then
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+            echo "同步完成，已推送到 ${GITHUB_REF_NAME}"
+          else
+            {
+              echo ""
+              echo "**合并冲突**，需要本地手动解决。冲突文件："
+              echo '```'
+              git --no-pager diff --name-only --diff-filter=U
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            git merge --abort || true
+            echo "::error::合并冲突，请在本机解决（git fetch upstream && git merge upstream/main）"
+            exit 1
+          fi
